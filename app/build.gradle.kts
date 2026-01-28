@@ -31,6 +31,31 @@ android {
             )
         }
     }
+
+    signingConfigs {
+        create("release") {
+            // prefer CI env vars, fall back to project properties (local.properties / gradle.properties)
+            val keystorePath: String = System.getenv("KEYSTORE_FILE")
+                ?: (project.findProperty("KEYSTORE_FILE") as? String)
+                ?: "keystore.jks"
+
+            storeFile = file(keystorePath)
+            storePassword = System.getenv("KEYSTORE_PASSWORD")
+                ?: (project.findProperty("KEYSTORE_PASSWORD") as? String)
+            keyAlias = System.getenv("KEY_ALIAS")
+                ?: (project.findProperty("KEY_ALIAS") as? String)
+            keyPassword = System.getenv("KEY_PASSWORD")
+                ?: (project.findProperty("KEY_PASSWORD") as? String)
+        }
+    }
+
+    buildTypes {
+        getByName("release") {
+            signingConfig = signingConfigs.getByName("release")
+            isMinifyEnabled = false
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+        }
+    }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
